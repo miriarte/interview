@@ -3,22 +3,22 @@ package http
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding._
-import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
-import akka.http.scaladsl.unmarshalling.Unmarshal
+import akka.http.scaladsl.model.{ContentTypeRange, HttpRequest, HttpResponse, StatusCodes}
+import akka.http.scaladsl.unmarshalling.{FromEntityUnmarshaller, Unmarshal, Unmarshaller}
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Flow, Sink, Source}
 import cats.implicits._
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport
 import forex.config.OneForgeConfig
-import forex.domain.Rate
+import forex.domain.{Currency, Rate}
 import monix.eval.Task
 import org.atnos.eff.Eff
 import org.atnos.eff.addon.monix.task.{fromTask, _}
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.reflect.ClassTag
 object OneForgeHttpClient extends FailFastCirceSupport {
-  import io.circe._
-  import io.circe.generic.semiauto._
+  import io.circe._, io.circe.generic.semiauto._
   case class Quote(
       symbol: String,
       price: BigDecimal,
@@ -53,7 +53,9 @@ object OneForgeHttpClient extends FailFastCirceSupport {
       })
 
 
-  private def toSymbol(pair: Rate.Pair): String = pair.from.show + pair.to.show
+  val defaultQuoteList = {
+    Currency.allValues.filterNot(_ == Currency.USD).map(c => Rate.Pair(Currency.USD, c))
+  }
 
 }
 class OneForgeHttpClient[R](implicit
@@ -67,7 +69,9 @@ class OneForgeHttpClient[R](implicit
   implicit val httpClient: Flow[HttpRequest, HttpResponse, Future[Http.OutgoingConnection]] =
     Http().outgoingConnectionHttps(host = config.host)
 
-  def quotes(quoteList: Seq[Rate.Pair]): Eff[R, Seq[Quote]] = {
+
+
+  def quotes(quoteList: Seq[Rate.Pair] = defaultQuoteList): Eff[R, Seq[Quote]] = {
     def makeQuotelist = quoteList.map(toSymbol).mkString(",")
     def makeParameters = s"api_key=${config.apiKey}&pairs=$makeQuotelist"
 

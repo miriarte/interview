@@ -2,7 +2,7 @@ package forex.config
 
 import org.zalando.grafter.macros._
 
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration._
 
 @readers
 case class ApplicationConfig(
@@ -10,7 +10,8 @@ case class ApplicationConfig(
     api: ApiConfig,
     oneforge: OneForgeConfig,
     externalConfig: ExternalConfig,
-    executors: ExecutorsConfig
+    executors: ExecutorsConfig,
+    cacheConfig: CacheConfig
 )
 
 case class OneForgeConfig(
@@ -36,4 +37,13 @@ case class ExecutorsConfig(
 
 case class ExternalConfig(
     actorSystemName: String
+)
+case class CacheConfig(
+    duration: FiniteDuration = 5 minutes,
+    redisConfig: Option[RedisConfig]
+)
+
+case class RedisConfig(
+    host: String,
+    port: Int
 )

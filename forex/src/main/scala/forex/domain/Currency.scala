@@ -15,6 +15,8 @@ object Currency {
   final case object SGD extends Currency
   final case object USD extends Currency
 
+  val allValues:Seq[Currency] = AUD :: CAD :: CHF :: EUR :: GBP:: NZD :: JPY :: SGD :: USD :: Nil
+
   implicit val show: Show[Currency] = Show.show {
     case AUD ⇒ "AUD"
     case CAD ⇒ "CAD"
