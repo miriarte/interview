@@ -24,7 +24,9 @@ object OneForgeHttpClient extends FailFastCirceSupport {
       bid: BigDecimal,
       ask: BigDecimal,
       timestamp: Long
-  )
+  ){
+    def invert = this.copy(price = 1 / price)
+  }
   case class LocalError(error: Boolean, message: String)
 
   implicit lazy val decoderQuote: Decoder[Quote] = deriveDecoder

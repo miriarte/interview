@@ -12,6 +12,6 @@ package object oneforge {
 
     def toRate(quote:Quote, pair:Rate.Pair) = Rate(pair,
       Price(quote.price),
-      Timestamp(OffsetDateTime.ofInstant(Instant.ofEpochMilli(quote.timestamp), ZoneOffset.UTC)))
+      Timestamp(OffsetDateTime.ofInstant(Instant.ofEpochMilli(quote.timestamp*1000), ZoneOffset.UTC)))
 
 }
