@@ -10,9 +10,9 @@ object ApiExceptionHandler {
       case _: RatesError ⇒
         ctx ⇒
           ctx.complete("Something went wrong in the rates process")
-      case _: Throwable ⇒
+      case t: Throwable ⇒
         ctx ⇒
-          ctx.complete("Something else went wrong")
+          ctx.complete(s"Something else went wrong $t")
     }
 
 }

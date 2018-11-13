@@ -9,19 +9,19 @@ import org.zalando.grafter.macros._
 
 @readerOf[ApplicationConfig]
 case class ActorSystems(
-    config: AkkaConfig
+    akkaConfig: AkkaConfig
 ) extends Start
     with Stop {
 
   implicit lazy val system: ActorSystem =
-    ActorSystem(config.name)
+    ActorSystem(akkaConfig.name)
 
   implicit lazy val materializer: Materializer =
     ActorMaterializer()(system)
 
   override def start: Eval[StartResult] =
     StartResult.eval("ActorSystems") {
-      if (config.exitJvmTimeout.isDefined) {
+      if (akkaConfig.exitJvmTimeout.isDefined) {
         system.registerOnTermination(System.exit(0))
       }
     }

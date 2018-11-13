@@ -17,6 +17,9 @@ case class Executors(
   lazy val default: ExecutionContext =
     system.dispatchers.lookup(config.default)
 
+  lazy val external: ExecutionContext =
+    system.dispatchers.lookup(config.external)
+
   override def start: Eval[StartResult] =
     StartResult.eval("Executors") {
       default
