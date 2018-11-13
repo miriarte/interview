@@ -1,6 +1,5 @@
 package forex.services.oneforge
 
-import cats.implicits._
 import forex.config.CacheConfig
 import forex.domain.{Currency, Rate}
 import forex.services.oneforge.http.OneForgeHttpClient.Quote
@@ -9,13 +8,16 @@ import monix.eval.Task
 import org.atnos.eff.Eff
 import org.atnos.eff.addon.monix.task.{_task, fromTask}
 import scalacache.Cache
-import scalacache.Monix.modes._
+import scalacache.modes.scalaFuture._
+
+import scala.concurrent.ExecutionContext
 
 class CascadableOneForgeService[R] private[oneforge] (liveService: OneForgeLiveService[R], cacheConfig: CacheConfig)(
     implicit
     m1: _task[R],
     cacheRates: Cache[Rate],
-    cacheQuotes: Cache[Error Either Seq[Quote]]
+    cacheQuotes: Cache[Error Either Seq[Quote]],
+    executionContext: ExecutionContext
 ) extends Algebra[Eff[R, ?]] {
   override def get(
       pair: Rate.Pair
@@ -32,16 +34,16 @@ class CascadableOneForgeService[R] private[oneforge] (liveService: OneForgeLiveS
           } yield Quote(toSymbol(pair), usdFrom.price / usdTo.price, BigDecimal(0), BigDecimal(0), usdFrom.timestamp)
           (directConversion orElse indirectConversion)
             .map(q ⇒ {
-              val rate = q.toRate(pair)
-              cacheRates.put(pair)(rate, cacheConfig.duration.some)
+              val rate = toRate(q,pair)
+              cacheRates.put(pair)(rate, Some(cacheConfig.duration))
               Right(rate)
             })
             .getOrElse(Left(Error.System(new Exception(s"No quote pairs from USD to create this rate $pair"))))
       }
-    lazy val tryCache = fromTask(cacheRates.get(pair))
+    lazy val tryCache = Task.fromFuture(cacheRates.get(pair))
     lazy val tryQuotes = getQuotesFromCache()
     for {
-      cache ← tryCache
+      cache ← fromTask(tryCache)
       quotes ← tryQuotes
     } yield {
       cache.map(Right.apply).getOrElse(tryMakeFromQuotesCall(quotes))
@@ -52,11 +54,11 @@ class CascadableOneForgeService[R] private[oneforge] (liveService: OneForgeLiveS
       for {
         quotes ← liveService.getQuotes()
       } yield {
-        cacheQuotes.put()(quotes, cacheConfig.duration.some)
+        cacheQuotes.put()(quotes, Some(cacheConfig.duration))
         quotes
       }
 
-    fromTask(cacheQuotes.get()).flatMap{
+    fromTask(Task.fromFuture(cacheQuotes.get())).flatMap{
       case Some(v) => fromTask(Task.pure(v))
       case None => updateCache()
     }

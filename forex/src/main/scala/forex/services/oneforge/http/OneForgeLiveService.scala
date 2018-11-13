@@ -1,10 +1,8 @@
-package forex.services.oneforge.http
+package forex.services.oneforge
+package http
 
-import java.time.{ Instant, OffsetDateTime, ZoneOffset }
-
-import forex.domain.{ Price, Rate, Timestamp }
+import forex.domain.Rate
 import forex.services.oneforge.http.OneForgeHttpClient.Quote
-import forex.services.oneforge.{ Algebra, Error }
 import org.atnos.eff.Eff
 import org.atnos.eff.addon.monix.task._task
 
@@ -18,7 +16,7 @@ final class OneForgeLiveService[R] private[oneforge] (clientHttp: OneForgeHttpCl
     for {
       conversion ← clientHttp.convert(pair)
     } yield {
-      conversion.map(_.toRate(pair))
+      conversion.map(q => toRate(q, pair))
     }
 
   def getQuotes(): Eff[R, Either[Error, Seq[Quote]]] =

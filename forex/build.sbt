@@ -30,8 +30,6 @@ libraryDependencies ++= Seq(
   "io.circe"                   %% "circe-jawn"             % "0.10.1",
   "org.atnos"                  %% "eff"                    % "5.1.0",
   "org.atnos"                  %% "eff-monix"              % "5.1.0",
-  "com.github.cb372"           %% "scalacache-cats-effect" % "0.26.0",
-  "com.github.cb372"           %% "scalacache-monix"       % "0.26.0",
   "com.github.cb372"           %% "scalacache-redis"       % "0.26.0",
   "com.github.cb372"           %% "scalacache-caffeine"    % "0.26.0",
   "org.zalando"                %% "grafter"                % "2.3.0",

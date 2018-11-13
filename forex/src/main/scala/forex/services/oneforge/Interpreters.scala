@@ -42,6 +42,7 @@ object Interpreters {
                           executors: Executors): Algebra[Eff[R, ?]] = {
     implicit val cacheQuotes = OneForgeDeps.cache[Error Either Seq[Quote]]
     implicit val cacheRates = OneForgeDeps.cache[Rate]
+    implicit val ec = executors.external
     new CascadableOneForgeService[R](liveService, cacheConfig)
   }
 }

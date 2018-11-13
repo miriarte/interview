@@ -3,11 +3,10 @@ package http
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding._
-import akka.http.scaladsl.model.{ContentTypeRange, HttpRequest, HttpResponse, StatusCodes}
-import akka.http.scaladsl.unmarshalling.{FromEntityUnmarshaller, Unmarshal, Unmarshaller}
+import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
+import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Flow, Sink, Source}
-import cats.implicits._
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport
 import forex.config.OneForgeConfig
 import forex.domain.{Currency, Rate}
@@ -16,9 +15,9 @@ import org.atnos.eff.Eff
 import org.atnos.eff.addon.monix.task.{fromTask, _}
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.reflect.ClassTag
 object OneForgeHttpClient extends FailFastCirceSupport {
-  import io.circe._, io.circe.generic.semiauto._
+  import io.circe._
+  import io.circe.generic.semiauto._
   case class Quote(
       symbol: String,
       price: BigDecimal,
